@@ -1,0 +1,57 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+    
+	<View android:id="@+id/field"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:background="@drawable/field"/>
+	<View android:id="@+id/center_ring"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:background="@drawable/center_ring"/>    
+
+	
+	<View android:id="@+id/goal1"
+	    android:layout_width="100dp"
+	    android:layout_height="10dp"
+	    android:layout_alignParentTop="true"
+	    android:layout_centerHorizontal="true"
+	    android:background="#000000"/>
+
+	<View android:id="@+id/goal2"
+	    android:layout_width="100dp"
+	    android:layout_height="10dp"
+	    android:layout_alignParentBottom="true"
+	    android:layout_centerHorizontal="true"
+	    android:background="#000000"/>
+	
+	<View android:id="@+id/puck"
+	    android:layout_width="30dp"
+	    android:layout_height="30dp"
+	    android:layout_centerInParent="true"
+	    android:background="@drawable/puck"/>
+	
+	<View android:id="@+id/handle1"
+	    android:layout_width="30dp"
+	    android:layout_height="30dp"
+	    android:layout_below="@id/goal1"
+	    android:background="@drawable/handle"
+	    android:layout_centerHorizontal="true"
+	    android:layout_margin="5dp"/>
+	
+	<View android:id="@+id/handle2"
+	    android:layout_width="30dp"
+	    android:layout_height="30dp"
+		android:layout_above="@id/goal2"
+	    android:background="@drawable/handle"
+	    android:layout_centerHorizontal="true"
+	    android:layout_margin="5dp"/>
+	
+</RelativeLayout>
