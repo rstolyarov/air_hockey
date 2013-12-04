@@ -4,8 +4,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
@@ -15,16 +18,22 @@ public class MainActivity extends Activity {
 	View handle1,handle2,puck,field,goal1,goal2;
 	String msg;
 	TextView score1,score2;
+	AlertDialog.Builder scoreDialog;
 	float xStep,yStep;
 	int score1Val,score2Val;
 	boolean scoredGoal1,scoredGoal2;
 	private android.widget.RelativeLayout.LayoutParams layoutParams;
 	private static final String HANDLE_TAG1 = "handle1";
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+
+                
+		
+		
 		xStep = (float)1.0;
 		yStep = (float)1.0;
 		handle1 = findViewById(R.id.handle1);
@@ -42,16 +51,18 @@ public class MainActivity extends Activity {
 		score1.setText(Integer.toString(score1Val));
 		score2.setText(Integer.toString(score2Val));
 		
-		final int xcut = puck.getWidth()/2 + 5;
-		final int ycut = puck.getHeight()/2 + 5;
-		final int x0 = 0+xcut;
-		final int xf = field.getWidth()-xcut;
-		final int y0 = 0+ycut;
-		final int yf = field.getHeight() - ycut;
-		final int g1_left = (int) (goal1.getX()-goal1.getWidth()/2);
-		final int g1_right = (int) (goal1.getX()+goal1.getWidth()/2);
-		final int g2_left = (int) (goal2.getX()-goal2.getWidth()/2);
-		final int g2_right = (int) (goal2.getX()+goal2.getWidth()/2);
+		scoreDialog = new AlertDialog.Builder(this);
+		scoreDialog.setCancelable(true);
+		scoreDialog.setInverseBackgroundForced(true);
+		scoreDialog.setNeutralButton("Continue",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                    int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
 		
 		final Handler handler = new Handler();
 		Timer timer = new Timer(false);
@@ -59,8 +70,22 @@ public class MainActivity extends Activity {
 			@Override
 			public void run(){
 				handler.post(new Runnable(){
+					final int pWidth = puck.getWidth();
+					final int pHeight = puck.getHeight();
+					final int x0 = (int)((float)pWidth/(float)2);
+					final int y0 = (int)((float)pHeight/(float)2);
+					final int xf = field.getWidth()-x0;
+					final int yf = field.getHeight() - y0;
+					final int g1_left = (int) (goal1.getX());
+					final int g1_right = (int) (goal1.getX()+goal1.getWidth());
+					final int g2_left = (int) (goal2.getX());
+					final int g2_right = (int) (goal2.getX()+goal2.getWidth());
+					final float initX = puck.getX();
+					final float initY = puck.getY();
 					@Override
 					public void run(){
+						Log.d("RMS",Float.toString(initX));
+
 						if (!scoredGoal1 && !scoredGoal2){
 						int x = (int)puck.getX();
 						int y = (int)puck.getY();
@@ -70,20 +95,36 @@ public class MainActivity extends Activity {
 						}
 						if (y > yf){
 							if (x > g2_left && x < g2_right){
-								scoredGoal2 = true;
+								scoredGoal1 = true;
 								score1Val++;
+								score1.setText(Integer.toString(score1Val));
+								scoreDialog.setTitle("Player 1 scored!");
+						            AlertDialog player1Scored = scoreDialog.create();
+						            player1Scored.show();
+						            puck.setX(initX);
+						            puck.setY(initY);
+						            yStep = -1*yStep;
+								
 							}else{
 								yStep = -1*yStep;
 							}
 						}
 						if (y < y0){
 							if (x > g1_left && x < g1_right){
-								scoredGoal1 = true;
+								scoredGoal2 = true;
 								score2Val++;
+								score2.setText(Integer.toString(score2Val));
+								scoreDialog.setTitle("Player 2 scored!");
+						            AlertDialog player2Scored = scoreDialog.create();
+						            player2Scored.show();
+						            puck.setX(initX);
+						            puck.setY(initY);
+						            yStep = -1*yStep;
 							}else{
 								yStep = -1*yStep;
 							}
 						}
+						
 						puck.setX(x+xStep);
 						puck.setY(y+yStep);
 						}else{
