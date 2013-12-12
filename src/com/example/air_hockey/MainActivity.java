@@ -7,7 +7,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.DialogInterface;
-import android.graphics.drawable.Drawable;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -15,25 +18,26 @@ import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.DragShadowBuilder;
 import android.view.View.OnDragListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
 	View handle1, handle2, puck, field, goal1, goal2;
+	View wholeView;
 	String msg;
 	TextView score1, score2;
 	AlertDialog.Builder scoreDialog;
 	float xStep, yStep;
+	float dist1,dist2;
 	float[] hXStep, hYStep;
 	boolean[] touchingHandle;
 	boolean[] scoredGoal;
 	int[] scoreVal;
-	boolean handleCollision;
+	final static int MAX_SCORE = 7;
+	boolean handleCollision, gameFinished;
 	float pDiam, pRad, x0, y0, xf, yf, ycent, g1_left, g1_right, g2_left, g2_right, initX, initY, hDiam, hRad, pMass, hMass, pDecel, hDecel;
 	long timeStepMillis;
 
@@ -41,15 +45,34 @@ public class MainActivity extends Activity {
 	private final class MyTouchListener implements OnTouchListener {
 		public boolean onTouch(View view, MotionEvent motionEvent) {
 			if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-				ClipData data = ClipData.newPlainText("", "");
-				DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(view);
-				view.startDrag(data, shadowBuilder, view, 0);
-				Log.d("RMS","actiondown");
 				view.setVisibility(View.INVISIBLE);
+				ClipData data = ClipData.newPlainText("", "");
+				DragShadow dragShadow = new DragShadow(view);
+				view.startDrag(data, dragShadow, view, 0);
+				Log.d("RMS","actiondown");
 				return true;
 			} else {
 				return false;
 			}
+		}
+	}
+	
+	public class DragShadow extends View.DragShadowBuilder{
+		
+		public DragShadow(View view) {
+			// TODO Auto-generated constructor stub
+			super(view);
+		}
+		@Override
+		public void onDrawShadow(Canvas canvas){
+			View v = getView();
+			v.draw(canvas);
+		}
+		@Override
+		public void onProvideShadowMetrics(Point shadowSize, Point shadowTouchPoint){
+			View v = getView();
+			shadowSize.set(v.getWidth(), v.getHeight());
+			shadowTouchPoint.set(v.getWidth()/2,v.getHeight()/2);
 		}
 	}
 
@@ -58,8 +81,7 @@ public class MainActivity extends Activity {
 		  @Override
 		  public boolean onDrag(View v, DragEvent event) {
 		    int action = event.getAction();
-		      View view = (View) event.getLocalState();
-		      view.setVisibility(View.VISIBLE);
+		      View handle = (View) event.getLocalState();
 		    switch (event.getAction()) {
 		    case DragEvent.ACTION_DRAG_STARTED:
 		   	 Log.d("RMS","dragstarted");
@@ -67,23 +89,23 @@ public class MainActivity extends Activity {
 		      break;
 		    case DragEvent.ACTION_DRAG_ENTERED:
 		   	 Log.d("RMS","dragentered");
-			      v.setX(view.getX());
-			      v.setY(view.getY());
 		      break;
 		    case DragEvent.ACTION_DRAG_EXITED:
 		   	 Log.d("RMS","dragexited");
-			      v.setX(view.getX());
-			      v.setY(view.getY());
 		      break;
+		    case DragEvent.ACTION_DRAG_LOCATION:
+             	handle.setX(event.getX());
+             	handle.setY(event.getY());
+             return(true);
 		    case DragEvent.ACTION_DROP:
 		   	 Log.d("RMS","drop");
-		      // Dropped, reassign View to ViewGroup
-
-		      v.setX(view.getX());
-		      v.setY(view.getY());
+           	handle.setX(event.getX());
+           	handle.setY(event.getY());
+		   	 handle.setVisibility(View.VISIBLE);
 		      break;
 		    case DragEvent.ACTION_DRAG_ENDED:
 		   	 Log.d("RMS","dragended");
+
 		      default:
 		      break;
 		    }
@@ -91,7 +113,7 @@ public class MainActivity extends Activity {
 		  }
 		} 
 	
-	private int puckHandleCollisionResponse(int id, float pMass, float hMass, float cent_x, float cent_y, float h_cent_x, float h_cent_y, float hRad, float pRad, float collisionDist) {
+	private int puckHandleCollisionResponse(int id, float pMass, float hMass, float cent_x, float cent_y, float h_cent_x, float h_cent_y, float collisionDist) {
 		handleCollision = true;
 		if (!touchingHandle[id - 1]) {
 			xStep = (xStep * (pMass - hMass) + (2 * hMass * hXStep[id - 1])) / (pMass + hMass);
@@ -109,10 +131,9 @@ public class MainActivity extends Activity {
 	}
 
 	private int puckGoalCollisionResponse(int id, float initX, float initY) {
-		scoredGoal[2 - id] = true;
-		scoreVal[2 - id]++;
-		score2.setText(Integer.toString(scoreVal[2 - id]));
-		scoreDialog.setTitle("Player " + Integer.toString(2 - id) + " scored!");
+		scoreVal[2 - id] = scoreVal[2-id] + 1;
+		score2.setText(Integer.toString(scoreVal[2 - id], 10));
+		scoreDialog.setTitle("Player " + Integer.toString(2 - id, 10) + " scored!");
 		AlertDialog player2Scored = scoreDialog.create();
 		player2Scored.show();
 		puck.setX(initX);
@@ -143,8 +164,8 @@ public class MainActivity extends Activity {
 		Log.d("RMS", "hello world");
 		setContentView(R.layout.activity_main);
 
-		xStep = 1;
-		yStep = 1;
+		xStep = 1.5f;
+		yStep = 1f;
 		hXStep = new float[] { 0, 0 };
 		hYStep = new float[] { 0, 0 };
 		handle1 = findViewById(R.id.handle1);
@@ -155,15 +176,16 @@ public class MainActivity extends Activity {
 		goal2 = findViewById(R.id.goal2);
 		score1 = (TextView) findViewById(R.id.score1);
 		score2 = (TextView) findViewById(R.id.score2);
+		wholeView = findViewById(R.id.wholeView);
 		scoredGoal = new boolean[] { false, false };
 		handleCollision = false;
+		gameFinished = false;
 		touchingHandle = new boolean[] { false, false };
-		scoreVal = new int[] { 2, 2 };
+		scoreVal = new int[] { 0, 0 };
 		
 		handle1.setOnTouchListener(new MyTouchListener());
 		handle2.setOnTouchListener(new MyTouchListener());
-		handle1.setOnDragListener(new MyDragListener());
-		handle2.setOnDragListener(new MyDragListener());
+		wholeView.setOnDragListener(new MyDragListener());
 
 
 	}
@@ -179,7 +201,7 @@ public class MainActivity extends Activity {
 		y0 = pRad;
 		xf = field.getWidth() - x0;
 		yf = field.getHeight() - y0;
-		ycent = field.getHeight() / 2;
+		ycent = field.getHeight() / 2f;
 		g1_left = goal1.getX();
 		g1_right = goal1.getX() + goal1.getWidth();
 		g2_left = goal2.getX();
@@ -187,13 +209,14 @@ public class MainActivity extends Activity {
 		initX = puck.getX();
 		initY = puck.getY();
 		hDiam = handle1.getWidth();
-		hRad = hDiam / 2;
+		hRad = hDiam / 2f;
 		pMass = 1f;
 		hMass = 5f;
-		timeStepMillis = 10;
-		pDecel = timeStepMillis / 10000;
-		hDecel = pDecel / 5;
-
+		dist1 = 10000f;
+		dist2 = 10000f;
+		timeStepMillis = 10L;
+		pDecel = (float)timeStepMillis / 100000f;
+		hDecel = (float)pDecel / 5f;
 		score1.setText(Integer.toString(scoreVal[0]));
 		score2.setText(Integer.toString(scoreVal[1]));
 		scoreDialog = new AlertDialog.Builder(this);
@@ -203,6 +226,20 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
+				puck.setX(initX);
+				puck.setY(initY);
+				yStep = -1 * yStep;
+				hXStep[0] = 0;
+				hXStep[1] = 0;
+				hYStep[0] = 0;
+				hYStep[1] = 0;
+				if (gameFinished){
+					scoreVal[0] = 0;
+					scoreVal[1] = 0;
+					score1.setText("0");
+					score2.setText("0");
+					gameFinished = false;
+				}
 			}
 		});
 
@@ -212,11 +249,11 @@ public class MainActivity extends Activity {
 			@Override
 			public void run() {
 				handler.post(new Runnable() {
-
+					
 					@Override
 					public void run() {
 						if (!scoredGoal[1] && !scoredGoal[0]) {
-
+							float prevDist1, prevDist2;
 							float h1_left = handle1.getX();
 							float h1_right = h1_left + hDiam;
 							float h1_cent_x = h1_left + hDiam / 2;
@@ -238,7 +275,7 @@ public class MainActivity extends Activity {
 
 							// Check if puck hit left or right wall
 							if (x > xf || x < x0) {
-								xStep = -1 * xStep;
+								xStep = -1f * xStep;
 							}
 
 							// Check if puck hit bottom wall and maybe goal. React if
@@ -246,11 +283,9 @@ public class MainActivity extends Activity {
 							if (y > yf) {
 								if (x > g2_left && x < g2_right) {
 									Log.d("RMS", "goalcollision2");
-
-									puckGoalCollisionResponse(2, initX, initY);
-
+									scoredGoal[1] = true;
 								} else {
-									yStep = -1 * yStep;
+									yStep = -1f * yStep;
 								}
 							}
 
@@ -259,26 +294,29 @@ public class MainActivity extends Activity {
 							if (y < y0) {
 								if (x > g1_left && x < g1_right) {
 									Log.d("RMS", "goalcollision1!");
-
-									puckGoalCollisionResponse(1, initX, initY);
+									scoredGoal[0] = true;
 								} else {
-									yStep = -1 * yStep;
+									yStep = -1f * yStep;
 								}
 							}
 
 							// Get distance between center of puck and centers of each
 							// handle
-							float dist1 = (float) Math.sqrt(Math.pow(cent_x - h1_cent_x, 2.0) + Math.pow(cent_y - h1_cent_y, 2.0));
-							float dist2 = (float) Math.sqrt(Math.pow(cent_x - h2_cent_x, 2.0) + Math.pow(cent_y - h2_cent_y, 2.0));
+							prevDist1 = dist1;
+							prevDist2 = dist2;
+
+							dist1 = (float) Math.sqrt(Math.pow(cent_x - h1_cent_x, 2.0) + Math.pow(cent_y - h1_cent_y, 2.0));
+							dist2 = (float) Math.sqrt(Math.pow(cent_x - h2_cent_x, 2.0) + Math.pow(cent_y - h2_cent_y, 2.0));
+
 
 							// If distance smaller than pRad and hRad, collision has
 							// occurred. Take care of it.
-							if (dist1 <= pRad + hRad) {
-								puckHandleCollisionResponse(1, pMass, hMass, cent_x, cent_y, h1_cent_x, h1_cent_y, hRad, pRad, dist1);
+							if (dist1 <= pRad + hRad && dist1 <= prevDist1) {
+								puckHandleCollisionResponse(1, pMass, hMass, cent_x, cent_y, h1_cent_x, h1_cent_y, dist1);
 								Log.d("RMS", "collision1!");
 							}
-							if (dist2 <= pRad + hRad) {
-								puckHandleCollisionResponse(2, pMass, hMass, cent_x, cent_y, h2_cent_x, h2_cent_y, hRad, pRad, dist2);
+							if (dist2 <= pRad + hRad && dist2 <= prevDist2) {
+								puckHandleCollisionResponse(2, pMass, hMass, cent_x, cent_y, h2_cent_x, h2_cent_y, dist2);
 								Log.d("RMS", "collision2!");
 
 							}
@@ -286,22 +324,22 @@ public class MainActivity extends Activity {
 							// Take care of handle collisions with walls and
 							// centerline.
 							if (h1_left < x0 || h1_right > xf) {
-								hXStep[0] = -1 * hXStep[0];
+								hXStep[0] = -1f * hXStep[0];
 							}
 							if (h2_left < x0 || h2_right > xf) {
-								hXStep[1] = -1 * hXStep[1];
+								hXStep[1] = -1f * hXStep[1];
 							}
 							if (h1_top < y0) {
-								hYStep[0] = -1 * hYStep[0];
+								hYStep[0] = -1f * hYStep[0];
 							}
 							if (h2_bottom > yf) {
-								hYStep[1] = -1 * hYStep[1];
+								hYStep[1] = -1f * hYStep[1];
 							}
 							if (h1_bottom > ycent) {
-								hYStep[0] = 0;
+								hYStep[0] = 0f;
 							}
 							if (h2_top < ycent) {
-								hYStep[1] = 0;
+								hYStep[1] = 0f;
 							}
 
 							// Slow down moving handles
@@ -323,6 +361,31 @@ public class MainActivity extends Activity {
 							handle2.setY(h2_top + hYStep[1]);
 							puck.setX(x + xStep);
 							puck.setY(y + yStep);
+							
+						}
+						else{
+							if (scoredGoal[1]){
+								scoredGoal[0] = false;
+								Log.d("goal", "goal");
+								puckGoalCollisionResponse(1, initX, initY);
+								if (scoreVal[1] == MAX_SCORE){
+									gameFinished = true;
+									scoreDialog.setTitle("Player " + Integer.toString(1, 10) + " wins! Close to start a new game.");
+									AlertDialog player2Scored = scoreDialog.create();
+									player2Scored.show();
+								}
+							}
+							else{
+								scoredGoal[0] = false;
+								Log.d("goal", "goal");
+								puckGoalCollisionResponse(0,initX,initY);
+								if (scoreVal[0] == MAX_SCORE){
+									gameFinished = true;
+									scoreDialog.setTitle("Player " + Integer.toString(2, 10) + " wins! Close to start a new game.");
+									AlertDialog player2Scored = scoreDialog.create();
+									player2Scored.show();
+								}
+							}
 						}
 					}
 				});

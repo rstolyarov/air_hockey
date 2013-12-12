@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/wholeView"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,7 +18,11 @@
 	    android:layout_height="match_parent"
 	    android:background="@drawable/center_ring"/>    
 
-	
+	<View android:id="@+id/puck"
+	    android:layout_width="30dp"
+	    android:layout_height="30dp"
+	    android:layout_centerInParent="true"
+	    android:background="@drawable/puck"/>
 	<View android:id="@+id/goal1"
 	    android:layout_width="130dp"
 	    android:layout_height="10dp"
@@ -38,11 +43,7 @@
 	    android:layout_centerVertical="true"
 	    android:background="#0000ff"/>
 	
-	<View android:id="@+id/puck"
-	    android:layout_width="30dp"
-	    android:layout_height="30dp"
-	    android:layout_centerInParent="true"
-	    android:background="@drawable/puck"/>
+
 	
 	<View android:id="@+id/handle1"
 	    android:layout_width="40dp"
