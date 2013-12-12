@@ -18,24 +18,7 @@
 	    android:layout_height="match_parent"
 	    android:background="@drawable/center_ring"/>    
 
-	<View android:id="@+id/puck"
-	    android:layout_width="30dp"
-	    android:layout_height="30dp"
-	    android:layout_centerInParent="true"
-	    android:background="@drawable/puck"/>
-	<View android:id="@+id/goal1"
-	    android:layout_width="130dp"
-	    android:layout_height="10dp"
-	    android:layout_alignParentTop="true"
-	    android:layout_centerHorizontal="true"
-	    android:background="#000000"/>
 
-	<View android:id="@+id/goal2"
-	    android:layout_width="130dp"
-	    android:layout_height="10dp"
-	    android:layout_alignParentBottom="true"
-	    android:layout_centerHorizontal="true"
-	    android:background="#000000"/>
 	
 	<View android:id="@+id/centerline"
 	    android:layout_width="match_parent"
@@ -45,21 +28,7 @@
 	
 
 	
-	<View android:id="@+id/handle1"
-	    android:layout_width="40dp"
-	    android:layout_height="40dp"
-	    android:layout_below="@id/goal1"
-	    android:background="@drawable/paddle"
-	    android:layout_centerHorizontal="true"
-	    android:layout_margin="5dp"/>
-	
-	<View android:id="@+id/handle2"
-	    android:layout_width="40dp"
-	    android:layout_height="40dp"
-		android:layout_above="@id/goal2"
-	    android:background="@drawable/paddle"
-	    android:layout_centerHorizontal="true"
-	    android:layout_margin="5dp"/>
+
 
     <TextView android:id="@+id/score1"
 	    android:layout_width="wrap_content"
@@ -80,4 +49,38 @@
         android:textColor="#C3FDB8"
         android:textSize="40dp"/>
 	
+    	<View android:id="@+id/puck"
+	    android:layout_width="30dp"
+	    android:layout_height="30dp"
+	    android:layout_centerInParent="true"
+	    android:background="@drawable/puck"/>
+	<View android:id="@+id/goal1"
+	    android:layout_width="130dp"
+	    android:layout_height="10dp"
+	    android:layout_alignParentTop="true"
+	    android:layout_centerHorizontal="true"
+	    android:background="#000000"/>
+
+	<View android:id="@+id/goal2"
+	    android:layout_width="130dp"
+	    android:layout_height="10dp"
+	    android:layout_alignParentBottom="true"
+	    android:layout_centerHorizontal="true"
+	    android:background="#000000"/>
+	
+		<View android:id="@+id/handle1"
+	    android:layout_width="40dp"
+	    android:layout_height="40dp"
+	    android:layout_below="@id/goal1"
+	    android:background="@drawable/paddle"
+	    android:layout_centerHorizontal="true"
+	    android:layout_margin="5dp"/>
+	
+	<View android:id="@+id/handle2"
+	    android:layout_width="40dp"
+	    android:layout_height="40dp"
+		android:layout_above="@id/goal2"
+	    android:background="@drawable/paddle"
+	    android:layout_centerHorizontal="true"
+	    android:layout_margin="5dp"/>
 </RelativeLayout>
